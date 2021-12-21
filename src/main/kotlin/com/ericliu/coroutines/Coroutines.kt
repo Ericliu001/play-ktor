@@ -5,8 +5,10 @@ import kotlin.random.Random
 
 fun main(args: Array<String>) = runBlocking {
     withContext(Dispatchers.IO) {
-        launch {
-            firstCoroutine(1)
+        repeat(1000) {
+            launch {
+                firstCoroutine(it)
+            }
         }
         println("done with the context.")
     }
