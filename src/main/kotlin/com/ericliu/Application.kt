@@ -1,6 +1,10 @@
 package com.ericliu
 
 import io.ktor.application.*
+import io.ktor.client.*
+import io.ktor.client.engine.apache.*
+import io.ktor.client.features.json.*
+import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.gson.*
 import io.ktor.http.*
@@ -14,6 +18,12 @@ fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation) {
         gson {
 
+        }
+    }
+
+    val client = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = GsonSerializer()
         }
     }
 
@@ -55,5 +65,17 @@ fun Application.module(testing: Boolean = false) {
         get("/json/json") {
             call.respond(mapOf("hello" to "world"))
         }
+
+        get("/spaceship") {
+            call.respond(Spaceship("Serenity"))
+        }
+
+        get("/consumeservice") {
+            val result = client.get<Spaceship>("http://localhost:8080/spaceship")
+            log.info("the result: $result")
+            call.respond(result)
+        }
     }
 }
+
+data class Spaceship(val name: String)
