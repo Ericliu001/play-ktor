@@ -24,6 +24,30 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+        trace { application.log.trace(it.buildText()) }
+        route("/weather") {
+            get("/usa") {
+                call.respondText { "The weather in US: Snow" }
+            }
+
+
+            route("/europe", HttpMethod.Get) {
+                header("systemtoken", "weathersystem") {
+                    param("name") {
+                        handle {
+                            val name = call.parameters.get("name")
+                            call.respondText { "Haha $name, The weather in Europe is: raining" }
+                        }
+                    }
+
+                    handle {
+                        call.respondText { "The weather in europe: sunny" }
+                    }
+                }
+            }
+        }
+
+
         get("/") {
             call.respondText("Hello, World!", contentType = ContentType.Text.Plain)
         }
