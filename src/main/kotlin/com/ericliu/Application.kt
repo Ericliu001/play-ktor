@@ -21,6 +21,23 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    install(StatusPages){
+        statusFile(
+            HttpStatusCode.InternalServerError,
+            HttpStatusCode.NotFound,
+            filePattern = "customerrors/myerror#.html"
+        )
+        exception<FirstException> { firstException ->
+            call.respond(HttpStatusCode.NotFound)
+            log.error(firstException.localizedMessage)
+            throw firstException
+        }
+        exception<SecondException> { secondException ->
+            call.respondRedirect("/", false)
+            throw secondException
+        }
+    }
+
     val client = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = GsonSerializer()
@@ -75,7 +92,18 @@ fun Application.module(testing: Boolean = false) {
             log.info("the result: $result")
             call.respond(result)
         }
+
+        get("/firstexception"){
+            throw FirstException()
+        }
+
+        get("/secondexception") {
+            throw SecondException()
+        }
     }
 }
 
 data class Spaceship(val name: String)
+
+class FirstException: RuntimeException()
+class SecondException: RuntimeException()
